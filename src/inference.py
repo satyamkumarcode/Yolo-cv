@@ -15,21 +15,17 @@ class YOLOv11Inference:
         self.device = device
         self.model.to(self.device)
 
-        # loading config from default.yaml
         config = load_config()
         self.conf_threshold = config["model"]["conf_threshold"]
         self.extensions = config["data"]["image_extension"]
 
     def process_image(self, image_path):
-
-        # Run inference
         results = self.model.predict(
             source=image_path,
             conf=self.conf_threshold,
             device=self.device
         )
 
-        # process results
         detection = []
         class_counts = {}
 
@@ -56,8 +52,8 @@ class YOLOv11Inference:
             'detections' : detection,
             'total_objects' : len(detection),
             'unique_class' : list(class_counts.keys()), # [0, 1, 2]
-            'class_counts' : class_counts # {0 : 3, 1 : 10, 2, : 1}
-        }
+            'class_counts' : class_counts # {0 : 3, 1 :
+            'class_counts' : class_counts
 
 
     def process_directory(self, directory):
@@ -75,5 +71,4 @@ class YOLOv11Inference:
             except Exception as e:
                 print(f"Error processing {img_path}: {str(e)}")
                 continue
-        # print(metadata)
         return metadata

@@ -10,7 +10,6 @@ from pathlib import Path
 
 def ensure_processed_dir(raw_path):
     raw_path = Path(raw_path)
-    # "c:/abc/def/image_01000" --> raw_path.name --> image_01000
     processed_path = raw_path.parent.parent / "processed" / raw_path.name
     processed_path.mkdir(parents=True, exist_ok=True)
     return processed_path
