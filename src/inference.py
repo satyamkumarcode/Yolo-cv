@@ -51,9 +51,9 @@ class YOLOv11Inference:
             'image_path' : str(image_path),
             'detections' : detection,
             'total_objects' : len(detection),
-            'unique_class' : list(class_counts.keys()), # [0, 1, 2]
-            'class_counts' : class_counts # {0 : 3, 1 :
+            'unique_class' : list(class_counts.keys()),
             'class_counts' : class_counts
+        }
 
 
     def process_directory(self, directory):
