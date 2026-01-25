@@ -125,12 +125,13 @@ option = st.radio("Choose an option:",
 
 if option == "Process new images":
     with st.expander("Process new images", expanded=True):
+        st.info("📁 For local deployment: Use relative path `data/raw/coco-val-2017-500`")
         col1, col2 = st.columns(2)
         with col1:
             image_dir = st.text_input(
                 "Image directory path:", 
-                value="https://raw.githubusercontent.com/satyamkumarcode/Yolo-cv/main/data/raw/coco-val-2017-500",
-                placeholder="path/to/images or GitHub raw URL"
+                value="data/raw/coco-val-2017-500",
+                placeholder="e.g., data/raw/coco-val-2017-500"
             )
         with col2:
             model_path = st.text_input("Model weights path:", value="yolo11m.pt")
@@ -152,6 +153,7 @@ if option == "Process new images":
                 st.warning(f"Please enter an image directory path")
 else :
     with st.expander("Load Existing Metadata", expanded=True):
+        st.info("📊 Load pre-computed metadata from a previous inference")
         metadata_path = st.text_input(
             "Metadata file path:", 
             value="data/processed/coco-val-2017-500/metadata.json",
