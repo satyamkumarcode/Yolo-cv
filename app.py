@@ -127,9 +127,13 @@ if option == "Process new images":
     with st.expander("Process new images", expanded=True):
         col1, col2 = st.columns(2)
         with col1:
-            image_dir = st.text_input("Image directory path:", placeholder="path/to/images")
+            image_dir = st.text_input(
+                "Image directory path:", 
+                value="https://raw.githubusercontent.com/satyamkumarcode/Yolo-cv/main/data/raw/coco-val-2017-500",
+                placeholder="path/to/images or GitHub raw URL"
+            )
         with col2:
-            model_path = st.text_input("Model weights path:", "yolo11m.pt")
+            model_path = st.text_input("Model weights path:", value="yolo11m.pt")
 
         if st.button("Start Inference"):
             if image_dir:
@@ -148,7 +152,11 @@ if option == "Process new images":
                 st.warning(f"Please enter an image directory path")
 else :
     with st.expander("Load Existing Metadata", expanded=True):
-        metadata_path = st.text_input("Metadata file path:", placeholder="path/to/matadata.json")
+        metadata_path = st.text_input(
+            "Metadata file path:", 
+            value="data/processed/coco-val-2017-500/metadata.json",
+            placeholder="path/to/metadata.json"
+        )
 
         if st.button("Load Metadata"):
             if metadata_path:
