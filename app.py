@@ -5,6 +5,9 @@ Email: satyamkumarcode@gmail.com
 Description: Computer vision-powered search application using YOLOv11 for object detection
 """
 
+# Import configuration first to handle Streamlit Cloud environment
+import streamlit_config
+
 import streamlit as st
 import sys
 import time
