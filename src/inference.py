@@ -1,8 +1,12 @@
+"""
+YOLOv11 Inference Module
+Author: Satyam Kumar
+Email: satyamkumarcode@gmail.com
+Description: YOLOv11 model inference for object detection on images
+"""
+
 from ultralytics import YOLO
 from pathlib import Path
-# import torch
-# from PIL import Image
-# import numpy
 from src.config import load_config
 
 class YOLOv11Inference:

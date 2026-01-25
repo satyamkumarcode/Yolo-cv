@@ -1,3 +1,10 @@
+"""
+Configuration Module
+Author: Satyam Kumar
+Email: satyamkumarcode@gmail.com
+Description: Configuration loader for YAML-based settings
+"""
+
 import yaml
 
 def load_config(config_path="configs/default.yaml"):

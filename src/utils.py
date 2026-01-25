@@ -1,3 +1,10 @@
+"""
+Utility Functions
+Author: Satyam Kumar
+Email: satyamkumarcode@gmail.com
+Description: Helper functions for metadata management and data processing
+"""
+
 import json
 from pathlib import Path
 

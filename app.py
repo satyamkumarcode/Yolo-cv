@@ -1,3 +1,10 @@
+"""
+YOLOv11 Image Search Application
+Author: Satyam Kumar
+Email: satyamkumarcode@gmail.com
+Description: Computer vision-powered search application using YOLOv11 for object detection
+"""
+
 import streamlit as st
 import sys
 import time
