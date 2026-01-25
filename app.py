@@ -142,10 +142,8 @@ if option == "Process new images":
                 st.warning(f"Please enter an image directory path")
 else :
     with st.expander("Load Existing Metadata", expanded=True):
-        st.info(" Load pre-computed metadata from a previous inference")
         metadata_path = st.text_input(
             "Metadata file path:", 
-            value="data/processed/coco-val-2017-500/metadata.json",
             placeholder="path/to/metadata.json"
         )
 
