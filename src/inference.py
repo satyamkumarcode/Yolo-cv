@@ -7,7 +7,7 @@ Description: YOLOv11 model inference for object detection on images
 
 from ultralytics import YOLO
 from pathlib import Path
-from src.config import load_config
+from config import load_config
 
 class YOLOv11Inference:
     def __init__(self, model_name, device='cpu'):

@@ -27,6 +27,3 @@ Thumbs.db
 # Model weights (large files)
 *.pt
 *.pth
-
-# Streamlit
-.streamlit/
