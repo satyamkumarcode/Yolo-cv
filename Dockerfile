@@ -40,8 +40,11 @@ COPY backend/ ./backend/
 # Copy frontend build (build it before running docker build)
 COPY frontend/build ./frontend/build
 
-# Create data directories
-RUN mkdir -p data/raw data/processed data/uploads
+# Copy pre-processed COCO dataset metadata (for demo purposes)
+COPY data/processed/coco-val-2017-500/metadata.json ./data/processed/coco-val-2017-500/
+
+# Create additional data directories
+RUN mkdir -p data/raw data/uploads
 
 # Expose port
 EXPOSE 5000
