@@ -4,3 +4,5 @@ model:
 
 data:
   image_extension: [".jpg", ".jpeg", ".png"]
+  default_image_dir: "data/raw/coco-val-2017-500"
+  default_metadata_path: "data/processed/coco-val-2017-500/metadata.json"

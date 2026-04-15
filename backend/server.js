@@ -477,7 +477,10 @@ app.get('/api/image', (req, res) => {
     imagePath = decodeURIComponent(imagePath);
     console.log(`[IMAGE] GET Requested path: ${imagePath}`);
     
-    // Normalize path for Windows compatibility
+    // Convert Windows backslashes to forward slashes for cross-platform compatibility
+    imagePath = imagePath.replace(/\\/g, '/');
+    
+    // Normalize path
     imagePath = path.normalize(imagePath);
     
     // If it's a relative path, resolve it relative to project root
@@ -580,6 +583,64 @@ app.post('/api/image', express.json(), (req, res) => {
 app.use((err, req, res, next) => {
   console.error('Error:', err);
   res.status(500).json({ error: 'Internal server error', details: err.message });
+});
+
+// Single image upload and detection endpoint
+app.post('/api/detect-single', upload.single('image'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No image uploaded' });
+    }
+
+    const { modelPath = 'yolo11m.pt' } = req.body;
+    const imagePath = req.file.path;
+    const originalName = req.file.originalname;
+
+    console.log('\n========== SINGLE IMAGE DETECTION ==========');
+    console.log(`Image: ${originalName}`);
+    console.log(`Saved Path: ${imagePath}`);
+    console.log(`Model: ${modelPath}`);
+    console.log('=============================================\n');
+
+    const pythonOptions = {
+      pythonPath: process.env.PYTHON_PATH || 'python',
+      scriptPath: path.join(__dirname, '../src'),
+      args: [JSON.stringify({ imagePath, modelPath })],
+      cwd: path.join(__dirname, '..'),
+      encoding: 'utf8'
+    };
+
+    runPythonWithLogging('detect_single.py', pythonOptions, (err, results) => {
+      if (err) {
+        console.error('\n❌ DETECTION ERROR:', err);
+        return res.status(500).json({ error: 'Error detecting objects', details: err.message });
+      }
+
+        try {
+          // Robustly parse last non-empty line from Python output
+          let outputLines = (results[0] || '').split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0);
+          let lastLine = outputLines.length > 0 ? outputLines[outputLines.length - 1] : '';
+          const detection = JSON.parse(lastLine);
+          // Normalize the path for serving
+          const normalizedPath = imagePath.replace(/\\/g, '/');
+          res.json({
+            success: true,
+            image: {
+              originalName,
+              path: normalizedPath,
+              url: `/api/image?path=${encodeURIComponent(normalizedPath)}`
+            },
+            detection
+          });
+        } catch (parseErr) {
+          console.error('Parse error:', parseErr);
+          res.status(500).json({ error: 'Error parsing detection results', details: parseErr.message });
+        }
+    });
+  } catch (error) {
+    console.error('Server error:', error);
+    res.status(500).json({ error: 'Server error', details: error.message });
+  }
 });
 
 // Serve static frontend files in production

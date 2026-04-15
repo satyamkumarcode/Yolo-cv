@@ -59,11 +59,10 @@ function SideNav() {
     { id: 'features', icon: <FiStar />, label: 'Features', section: 'features-section' },
     { id: 'benchmarks', icon: <FiActivity />, label: 'Benchmarks', section: 'benchmarks-section' },
     { id: 'limitations', icon: <FiAlertCircle />, label: 'Limitations', section: 'limitations-section' },
-    { id: 'techstack', icon: <FiCode />, label: 'Tech Stack', section: 'techstack-section' },
     { id: 'comparison', icon: <FiBarChart2 />, label: 'Compare', section: 'comparison-section' },
     { id: 'project-overview', icon: <FiGitBranch />, label: 'Overview', section: 'project-overview-section' },
     { id: 'architecture', icon: <FiBox />, label: 'Flow', section: 'architecture-section' },
-    { id: 'process', icon: <FiCpu />, label: 'Process', section: 'process-section' },
+    { id: 'model', icon: <FiCpu />, label: 'Model', section: 'process-section' },
     { id: 'search', icon: <FiSearch />, label: 'Search', section: 'search-section' },
     { id: 'results', icon: <FiImage />, label: 'Results', section: 'results-section' },
   ];

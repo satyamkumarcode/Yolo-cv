@@ -43,8 +43,11 @@ COPY frontend/build ./frontend/build
 # Copy pre-processed COCO dataset metadata (for demo purposes)
 COPY data/processed/coco-val-2017-500/metadata.json ./data/processed/coco-val-2017-500/
 
+# Copy COCO raw images for reliable image loading (~77MB)
+COPY data/raw/coco-val-2017-500/ ./data/raw/coco-val-2017-500/
+
 # Create additional data directories
-RUN mkdir -p data/raw data/uploads
+RUN mkdir -p data/uploads
 
 # Expose port
 EXPOSE 5000

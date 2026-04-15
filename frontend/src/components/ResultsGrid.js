@@ -130,7 +130,15 @@ function ResultsGrid({ results, metadata }) {
 function ImageCard({ result, showBoxes, highlightMatches, viewMode, onExpand }) {
   const [loadError, setLoadError] = useState(null);
   const [imageUrl, setImageUrl] = useState('');
+  const [useFallback, setUseFallback] = useState(false);
   const canvasRef = React.useRef(null);
+
+  // Get COCO image URL from filename
+  const getCocoImageUrl = (imagePath) => {
+    const fileName = imagePath.split('\\').pop() || imagePath.split('/').pop();
+    // COCO 2017 validation images are publicly available
+    return `http://images.cocodataset.org/val2017/${fileName}`;
+  };
 
   useEffect(() => {
     const imagePath = result.image_path;
@@ -138,11 +146,27 @@ function ImageCard({ result, showBoxes, highlightMatches, viewMode, onExpand }) 
       setLoadError('No image path');
       return;
     }
-    const encodedPath = encodeURIComponent(imagePath);
-    const url = `/api/image?imagePath=${encodedPath}`;
-    setImageUrl(url);
+    
+    if (useFallback) {
+      // Use COCO CDN as fallback
+      setImageUrl(getCocoImageUrl(imagePath));
+    } else {
+      // Try local server first
+      const encodedPath = encodeURIComponent(imagePath);
+      setImageUrl(`/api/image?imagePath=${encodedPath}`);
+    }
     setLoadError(null);
-  }, [result.image_path]);
+  }, [result.image_path, useFallback]);
+
+  // Handle image load error - switch to COCO CDN fallback
+  const handleImageError = () => {
+    if (!useFallback) {
+      console.log('Local image failed, trying COCO CDN fallback...');
+      setUseFallback(true);
+    } else {
+      setLoadError('Failed to load image');
+    }
+  };
 
   useEffect(() => {
     if (!showBoxes || !imageUrl || !canvasRef.current) {
@@ -179,11 +203,11 @@ function ImageCard({ result, showBoxes, highlightMatches, viewMode, onExpand }) 
     };
     
     img.onerror = () => {
-      setLoadError('Failed to load image');
+      handleImageError();
     };
     
     img.src = imageUrl;
-  }, [showBoxes, imageUrl, result.detections]);
+  }, [showBoxes, imageUrl, result.detections, useFallback]);
 
   const fileName = result.image_path.split('\\').pop() || result.image_path.split('/').pop();
   const objectList = Object.entries(result.class_counts);
@@ -202,7 +226,7 @@ function ImageCard({ result, showBoxes, highlightMatches, viewMode, onExpand }) 
           <img
             src={imageUrl}
             alt={fileName}
-            onError={() => setLoadError('Failed to load')}
+            onError={handleImageError}
           />
         ) : (
           <div className="loading-placeholder">
@@ -243,14 +267,96 @@ function ImageCard({ result, showBoxes, highlightMatches, viewMode, onExpand }) 
 
 function ImageModal({ result, showBoxes, onClose }) {
   const [imageUrl, setImageUrl] = useState('');
+  const [useFallback, setUseFallback] = useState(false);
   const canvasRef = React.useRef(null);
+  const containerRef = React.useRef(null);
+  
+  // Pan and zoom state
+  const [scale, setScale] = useState(1);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+
+  // Get COCO image URL from filename
+  const getCocoImageUrl = (imagePath) => {
+    const fileName = imagePath.split('\\').pop() || imagePath.split('/').pop();
+    return `http://images.cocodataset.org/val2017/${fileName}`;
+  };
 
   useEffect(() => {
     const imagePath = result.image_path;
     if (imagePath) {
-      setImageUrl(`/api/image?imagePath=${encodeURIComponent(imagePath)}`);
+      if (useFallback) {
+        setImageUrl(getCocoImageUrl(imagePath));
+      } else {
+        setImageUrl(`/api/image?imagePath=${encodeURIComponent(imagePath)}`);
+      }
     }
-  }, [result.image_path]);
+  }, [result.image_path, useFallback]);
+
+  // Handle image load error
+  const handleImageError = () => {
+    if (!useFallback) {
+      setUseFallback(true);
+    }
+  };
+
+  // Zoom controls
+  const handleZoomIn = () => setScale(prev => Math.min(prev + 0.25, 4));
+  const handleZoomOut = () => setScale(prev => Math.max(prev - 0.25, 0.5));
+  const handleResetZoom = () => {
+    setScale(1);
+    setPosition({ x: 0, y: 0 });
+  };
+
+  // Mouse wheel zoom
+  const handleWheel = (e) => {
+    e.preventDefault();
+    const delta = e.deltaY > 0 ? -0.1 : 0.1;
+    setScale(prev => Math.max(0.5, Math.min(4, prev + delta)));
+  };
+
+  // Drag to pan
+  const handleMouseDown = (e) => {
+    if (scale > 1) {
+      setIsDragging(true);
+      setDragStart({ x: e.clientX - position.x, y: e.clientY - position.y });
+    }
+  };
+
+  const handleMouseMove = (e) => {
+    if (isDragging) {
+      setPosition({
+        x: e.clientX - dragStart.x,
+        y: e.clientY - dragStart.y
+      });
+    }
+  };
+
+  const handleMouseUp = () => setIsDragging(false);
+  const handleMouseLeave = () => setIsDragging(false);
+
+  // Touch support for mobile
+  const handleTouchStart = (e) => {
+    if (scale > 1 && e.touches.length === 1) {
+      setIsDragging(true);
+      setDragStart({ 
+        x: e.touches[0].clientX - position.x, 
+        y: e.touches[0].clientY - position.y 
+      });
+    }
+  };
+
+  const handleTouchMove = (e) => {
+    if (isDragging && e.touches.length === 1) {
+      setPosition({
+        x: e.touches[0].clientX - dragStart.x,
+        y: e.touches[0].clientY - dragStart.y
+      });
+    }
+  };
+
+  const handleTouchEnd = () => setIsDragging(false);
 
   useEffect(() => {
     if (!showBoxes || !imageUrl || !canvasRef.current) return;
@@ -294,13 +400,45 @@ function ImageModal({ result, showBoxes, onClose }) {
           <FiX />
         </button>
 
-        <div className="modal-image">
-          {showBoxes ? (
-            <canvas ref={canvasRef} />
-          ) : (
-            <img src={imageUrl} alt={fileName} />
-          )}
+        {/* Zoom Controls */}
+        <div className="modal-zoom-controls">
+          <button onClick={handleZoomOut} title="Zoom Out" disabled={scale <= 0.5}>−</button>
+          <span className="zoom-level">{Math.round(scale * 100)}%</span>
+          <button onClick={handleZoomIn} title="Zoom In" disabled={scale >= 4}>+</button>
+          <button onClick={handleResetZoom} title="Reset" className="reset-btn">Reset</button>
         </div>
+
+        <div 
+          className="modal-image"
+          ref={containerRef}
+          onWheel={handleWheel}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseLeave}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+          style={{ cursor: scale > 1 ? (isDragging ? 'grabbing' : 'grab') : 'default' }}
+        >
+          <div 
+            className="modal-image-wrapper"
+            style={{
+              transform: `translate(${position.x}px, ${position.y}px) scale(${scale})`,
+              transition: isDragging ? 'none' : 'transform 0.1s ease-out'
+            }}
+          >
+            {showBoxes ? (
+              <canvas ref={canvasRef} />
+            ) : (
+              <img src={imageUrl} alt={fileName} onError={handleImageError} />
+            )}
+          </div>
+        </div>
+
+        <p className="modal-hint">
+          {scale > 1 ? 'Drag to pan • Scroll to zoom' : 'Scroll or use buttons to zoom'}
+        </p>
 
         <div className="modal-info">
           <h3>{fileName}</h3>
