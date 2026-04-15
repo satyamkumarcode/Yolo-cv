@@ -27,3 +27,15 @@ Thumbs.db
 # Model weights (large files)
 *.pt
 *.pth
+
+# Node
+node_modules/
+npm-debug.log*
+
+# Build output
+frontend/build/
+backend/dist/
+
+# Env files
+.env
+.env.local
